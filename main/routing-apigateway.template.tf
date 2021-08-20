@@ -71,4 +71,4 @@ resource "aws_apigatewayv2_stage" "routing" {
     route_key = "ANY {{route.routing_prefix}}{proxy+}"
     target = "integrations/${aws_apigatewayv2_integration.{{route.service_name}}.id}"
   }
-{% endfor}
+{% endfor %}
