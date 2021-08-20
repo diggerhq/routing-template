@@ -86,3 +86,7 @@ resource "aws_apigatewayv2_stage" "routing" {
     target = "integrations/${aws_apigatewayv2_integration.{{route.service_name}}.id}"
   }
 {% endfor %}
+
+output "lb_url" {
+  value = aws_apigatewayv2_api.routing_{{routing_id}}.api_endpoint
+}
