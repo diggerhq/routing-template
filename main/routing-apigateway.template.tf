@@ -29,7 +29,7 @@ resource "aws_apigatewayv2_domain_name" "domain_{{routing_id}}" {
 {% endif %}
 
 resource "aws_apigatewayv2_stage" "routing" {
-  api_id      = aws_apigatewayv2_api.routing.id
+  api_id      = aws_apigatewayv2_api.routing_{{routing_id}}.id
   name        = "$default"
   auto_deploy = true
 }
@@ -60,7 +60,21 @@ resource "aws_apigatewayv2_stage" "routing" {
       connection_type    = "INTERNET"
     }
   {% elif service.service_type == "lambda" %}
+    # data "aws_lambda_function" "{{service.name}}" {
+    #   function_name = "${var.project_name}-${var.environment}-${var.service_name}"
+    # }
 
+    # resource "aws_apigatewayv2_integration" "{{service.name}}" {
+    #   api_id           = aws_apigatewayv2_api.routing_{{routing_id}}.id
+    #   integration_type = "AWS"
+
+    #   connection_type           = "INTERNET"
+    #   content_handling_strategy = "CONVERT_TO_TEXT"
+    #   description               = "Lambda {{service.name}}"
+    #   integration_method        = "POST"
+    #   integration_uri           = aws_lambda_function.{{service.name}}.invoke_arn
+    #   passthrough_behavior      = "WHEN_NO_MATCH"
+    # }
   {% endif %}
 {% endfor %}
 
