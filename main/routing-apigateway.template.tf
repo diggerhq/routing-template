@@ -6,8 +6,8 @@ resource "aws_apigatewayv2_api" "routing" {
   {% if routing_domain %}
   cors_configuration {
     allow_credentials  = true 
-    allow_headers      = "*"
-    allow_methods      = "*"
+    allow_headers      = ["*"]
+    allow_methods      = ["*"]
     allow_origins      = "{{routing_domain}}"
     # expose_headers     = ""
     max_age            = 100
@@ -36,7 +36,7 @@ resource "aws_apigatewayv2_stage" "routing" {
 
 
 {% for service in routing_services %}
-  {% if service.service_type == "container" not and service.internal %}
+  {% if service.service_type == "container" and not service.internal %}
     resource "aws_apigatewayv2_integration" "{{service.name}}" {
       api_id           = aws_apigatewayv2_api.example.id
       # credentials_arn  = aws_iam_role.example.arn
@@ -47,7 +47,7 @@ resource "aws_apigatewayv2_stage" "routing" {
       integration_method = "ANY"
       connection_type    = "INTERNET"
     }
-  {% elif service.service_type == "container" not service.internal %}
+  {% elif service.service_type == "container" and service.internal %}
     # TODOO: this should be VPC link
     resource "aws_apigatewayv2_integration" "{{service.name}}" {
       api_id           = aws_apigatewayv2_api.example.id
@@ -68,7 +68,7 @@ resource "aws_apigatewayv2_stage" "routing" {
 {% for route in routing_routes %}
   resource "aws_apigatewayv2_route" "route_{{routing_id}}" {
     api_id    = aws_apigatewayv2_api.example.id
-    route_key = "ANY {{route.path}}{proxy+}"
-    target = "integrations/${aws_apigatewayv2_integration.{{service.name}}.id}"
+    route_key = "ANY {{route.routing_prefix}}{proxy+}"
+    target = "integrations/${aws_apigatewayv2_integration.{{route.service_name}}.id}"
   }
 {% endfor}
