@@ -60,21 +60,34 @@ resource "aws_apigatewayv2_stage" "routing" {
       connection_type    = "INTERNET"
     }
   {% elif service.service_type == "lambda" %}
-    # data "aws_lambda_function" "{{service.name}}" {
-    #   function_name = "${var.project_name}-${var.environment}-${var.service_name}"
-    # }
+    data "aws_lambda_function" "{{service.name}}" {
+      function_name = "{{service.function_name}}"
+    }
 
-    # resource "aws_apigatewayv2_integration" "{{service.name}}" {
-    #   api_id           = aws_apigatewayv2_api.routing_{{routing_id}}.id
-    #   integration_type = "AWS"
+    resource "aws_apigatewayv2_integration" "{{service.name}}" {
+      api_id           = aws_apigatewayv2_api.routing_{{routing_id}}.id
+      integration_type = "AWS"
 
-    #   connection_type           = "INTERNET"
-    #   content_handling_strategy = "CONVERT_TO_TEXT"
-    #   description               = "Lambda {{service.name}}"
-    #   integration_method        = "POST"
-    #   integration_uri           = aws_lambda_function.{{service.name}}.invoke_arn
-    #   passthrough_behavior      = "WHEN_NO_MATCH"
-    # }
+      connection_type           = "INTERNET"
+      content_handling_strategy = "CONVERT_TO_TEXT"
+      description               = "Lambda {{service.name}}"
+      integration_method        = "ANY"
+      integration_uri           = aws_lambda_function.{{service.name}}.invoke_arn
+      passthrough_behavior      = "WHEN_NO_MATCH"
+    }
+
+    # gateway permission
+    resource "aws_lambda_permission" "lambda_permission_{{service.name}}" {
+      count = var.api_gateway_trigger ? 1 : 0
+      statement_id  = "${var.project_name}${var.environment}{{service.name}}APIInvoke"
+      action        = "lambda:InvokeFunction"
+      function_name = aws_lambda_function.{{service.name}}.function_name
+      principal     = "apigateway.amazonaws.com"
+
+      # The /*/*/* part allows invocation from any stage, method and resource path
+      # within API Gateway
+      source_arn = "${aws_apigatewayv2_api.routing_{{routing_id}}.execution_arn}/*/*/*"
+    }
   {% endif %}
 {% endfor %}
 
