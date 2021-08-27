@@ -59,7 +59,7 @@ resource "aws_apigatewayv2_stage" "routing" {
       integration_method = "ANY"
       connection_type    = "INTERNET"
     }
-  {% elif service.service_type == "lambda" %}
+  {% elif service.service_type == "serverless" %}
     data "aws_lambda_function" "{{service.name}}" {
       function_name = "{{service.function_name}}"
     }
