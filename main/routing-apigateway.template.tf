@@ -78,7 +78,6 @@ resource "aws_apigatewayv2_stage" "routing" {
 
     # gateway permission
     resource "aws_lambda_permission" "lambda_permission_{{service.name}}" {
-      count = var.api_gateway_trigger ? 1 : 0
       statement_id  = "${var.project_name}${var.environment}{{service.name}}APIInvoke"
       action        = "lambda:InvokeFunction"
       function_name = data.aws_lambda_function.{{service.name}}.function_name
