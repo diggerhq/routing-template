@@ -76,17 +76,6 @@ resource "aws_apigatewayv2_stage" "routing" {
       passthrough_behavior      = "WHEN_NO_MATCH"
     }
 
-    # gateway permission
-    resource "aws_lambda_permission" "lambda_permission_{{service.name}}" {
-      statement_id  = "${var.project_name}${var.environment}{{service.name}}APIInvoke"
-      action        = "lambda:InvokeFunction"
-      function_name = "{{service.function_name}}"
-      principal     = "apigateway.amazonaws.com"
-
-      # The /*/*/* part allows invocation from any stage, method and resource path
-      # within API Gateway
-      source_arn = "${aws_apigatewayv2_api.routing_{{routing_id}}.execution_arn}/*/*/*"
-    }
   {% endif %}
 {% endfor %}
 
