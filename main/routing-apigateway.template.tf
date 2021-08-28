@@ -60,9 +60,6 @@ resource "aws_apigatewayv2_stage" "routing" {
       connection_type    = "INTERNET"
     }
   {% elif service.service_type == "serverless" %}
-    data "aws_lambda_function" "{{service.function_name}}" {
-      function_name = "{{service.function_name}}"
-    }
 
     resource "aws_apigatewayv2_integration" "{{service.name}}" {
       api_id           = aws_apigatewayv2_api.routing_{{routing_id}}.id
@@ -72,10 +69,21 @@ resource "aws_apigatewayv2_stage" "routing" {
       content_handling_strategy = "CONVERT_TO_TEXT"
       description               = "Lambda {{service.name}}"
       integration_method        = "ANY"
-      integration_uri           = data.aws_lambda_function.{{service.name}}.invoke_arn
+      integration_uri           = "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:241275530125:function:serve1c17d-yy86191-appvpb4e41/invocations"
       passthrough_behavior      = "WHEN_NO_MATCH"
     }
 
+    # gateway permission
+    resource "aws_lambda_permission" "lambda_permission_{{service.name}}" {
+      statement_id  = "${var.project_name}${var.environment}{{service.name}}APIInvoke"
+      action        = "lambda:InvokeFunction"
+      function_name = "{{service.function_name}}"
+      principal     = "apigateway.amazonaws.com"
+
+      # The /*/*/* part allows invocation from any stage, method and resource path
+      # within API Gateway
+      source_arn = "${aws_apigatewayv2_api.routing_{{routing_id}}.execution_arn}/*/*/*"
+    }
   {% endif %}
 {% endfor %}
 
