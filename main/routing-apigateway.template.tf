@@ -72,7 +72,7 @@ resource "aws_apigatewayv2_stage" "routing" {
       content_handling_strategy = "CONVERT_TO_TEXT"
       description               = "Lambda {{service.name}}"
       integration_method        = "ANY"
-      integration_uri           = aws_lambda_function.{{service.name}}.invoke_arn
+      integration_uri           = data.aws_lambda_function.{{service.name}}.invoke_arn
       passthrough_behavior      = "WHEN_NO_MATCH"
     }
 
@@ -81,7 +81,7 @@ resource "aws_apigatewayv2_stage" "routing" {
       count = var.api_gateway_trigger ? 1 : 0
       statement_id  = "${var.project_name}${var.environment}{{service.name}}APIInvoke"
       action        = "lambda:InvokeFunction"
-      function_name = aws_lambda_function.{{service.name}}.function_name
+      function_name = data.aws_lambda_function.{{service.name}}.function_name
       principal     = "apigateway.amazonaws.com"
 
       # The /*/*/* part allows invocation from any stage, method and resource path
