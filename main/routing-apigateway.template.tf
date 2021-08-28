@@ -95,6 +95,14 @@ resource "aws_apigatewayv2_stage" "routing" {
     api_id    = aws_apigatewayv2_api.routing_{{routing_id}}.id
     route_key = "ANY {{route.route_prefix}}{proxy+}"
     target = "integrations/${aws_apigatewayv2_integration.{{route.service_name}}.id}"
+
+    lifecycle {
+      ignore_changes = [
+        authorization_scopes,
+        authorization_type,
+        authorizer_id,
+      ]
+    }
   }
 {% endfor %}
 
