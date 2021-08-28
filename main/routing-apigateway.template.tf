@@ -77,7 +77,7 @@ resource "aws_apigatewayv2_stage" "routing" {
 
     # gateway permission
     resource "aws_lambda_permission" "lambda_permission_{{service.name}}" {
-      statement_id  = "${var.project_name}${var.environment}{{service.name}}APIInvoke"
+      statement_id  = "${var.project_name}${var.environment}{{service.name}}GWAPIInvoke"
       action        = "lambda:InvokeFunction"
       function_name = data.aws_lambda_function.{{service.name}}.function_name
       principal     = "apigateway.amazonaws.com"
