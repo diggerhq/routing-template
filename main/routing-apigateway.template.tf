@@ -69,7 +69,6 @@ resource "aws_apigatewayv2_stage" "routing" {
       integration_type = "AWS_PROXY"
 
       connection_type           = "INTERNET"
-      content_handling_strategy = "CONVERT_TO_TEXT"
       description               = "Lambda {{service.name}}"
       integration_method        = "ANY"
       integration_uri           = data.aws_lambda_function.{{service.name}}.invoke_arn
