@@ -70,7 +70,7 @@ resource "aws_apigatewayv2_stage" "routing" {
 
       connection_type           = "INTERNET"
       description               = "Lambda {{service.name}}"
-      integration_method        = "ANY"
+      integration_method        = "POST"
       integration_uri           = data.aws_lambda_function.{{service.name}}.invoke_arn
       passthrough_behavior      = "WHEN_NO_MATCH"
     }
