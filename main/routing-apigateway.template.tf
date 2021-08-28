@@ -66,7 +66,7 @@ resource "aws_apigatewayv2_stage" "routing" {
 
     resource "aws_apigatewayv2_integration" "{{service.name}}" {
       api_id           = aws_apigatewayv2_api.routing_{{routing_id}}.id
-      integration_type = "AWS"
+      integration_type = "HTTP_PROXY"
 
       connection_type           = "INTERNET"
       content_handling_strategy = "CONVERT_TO_TEXT"
