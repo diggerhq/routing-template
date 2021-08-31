@@ -46,6 +46,11 @@ resource "aws_apigatewayv2_stage" "routing" {
 
       integration_method = "ANY"
       connection_type    = "INTERNET"
+
+      request_parameters = {
+        "overwrite:path" = "$request.path.proxy"
+      }    
+
     }
   {% elif service.service_type == "container" and service.internal %}
     # TODOO: this should be VPC link
@@ -58,6 +63,10 @@ resource "aws_apigatewayv2_stage" "routing" {
 
       integration_method = "ANY"
       connection_type    = "INTERNET"
+
+      request_parameters = {
+        "overwrite:path" = "$request.path.proxy"
+      }
     }
   {% elif service.service_type == "serverless" %}
     data "aws_lambda_function" "{{service.name}}" {
@@ -73,6 +82,10 @@ resource "aws_apigatewayv2_stage" "routing" {
       integration_method        = "POST"
       integration_uri           = data.aws_lambda_function.{{service.name}}.invoke_arn
       passthrough_behavior      = "WHEN_NO_MATCH"
+
+      request_parameters = {
+        "overwrite:path" = "$request.path.proxy"
+      }
     }
 
     # gateway permission
@@ -103,10 +116,6 @@ resource "aws_apigatewayv2_stage" "routing" {
         authorizer_id,
       ]
     }
-
-    request_parameters = {
-      "overwrite:path"                   = "$request.path.proxy"
-    }    
   }
 {% endfor %}
 
