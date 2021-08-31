@@ -103,6 +103,10 @@ resource "aws_apigatewayv2_stage" "routing" {
         authorizer_id,
       ]
     }
+
+    request_parameters = {
+      "overwrite:path"                   = "$request.path.proxy"
+    }    
   }
 {% endfor %}
 
