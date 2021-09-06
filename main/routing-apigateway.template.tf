@@ -18,44 +18,34 @@ resource "aws_apigatewayv2_api" "routing_{{routing_id}}" {
 
 
 {% if main_vpc_id %}
-resource "aws_security_group" "{{routing_id}}_sg" {
-  name        = "${var.project_name}-${var.environment}-vpclink-sg"
-  description = "Allow TLS inbound traffic"
-  vpc_id      = "{{main_vpc_id}}"
-
-  ingress = [
-    {
-      description = "TLS from VPC"
-      from_port = 443
-      to_port = 443
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
-    },
-    {
-      description = "TLS from VPC"
-      from_port = 80
-      to_port = 80
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
-    }
-  ]
-
-  egress = [
-    {
-      from_port = 0
-      to_port = 0
-      protocol = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = ["::/0"]
-    }
-  ]
-
-  tags = {
-    Name = "VPC Link security group"
+  resource "aws_security_group" "{{routing_id}}_sg" {
+    name        = "${var.project_name}-${var.environment}-vpclink-sg"
+    description = "Allow TLS inbound traffic"
+    vpc_id      = "{{main_vpc_id}}"
   }
-}
+
+  # Rules for the LB (Targets the task SG)
+  resource "aws_security_group_rule" "nsg_task_ingress_rule" {
+    description              = "TLS VPCLink ingress"
+    type                     = "ingress"
+    from_port                = 80
+    to_port                  = 80
+    protocol                 = "tcp"
+    cidr_blocks = ["0.0.0.0"]
+
+    security_group_id = aws_security_group.{{routing_id}}_sg.id
+  }
+
+  resource "aws_security_group_rule" "nsg_task_egress_rule" {
+    description = "TLS VPCLink egress"
+    type        = "egress"
+    from_port   = "0"
+    to_port     = "0"
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+
+    security_group_id = aws_security_group.{{routing_id}}_sg.id
+  }
 {% endif %}
 
 
