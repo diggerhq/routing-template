@@ -104,9 +104,9 @@ resource "aws_apigatewayv2_stage" "routing" {
       connection_type    = "VPC_LINK"
       connection_id      = aws_apigatewayv2_vpc_link.{{service.name}}.id
 
-      request_parameters = {
-        "overwrite:path" = "$request.path.proxy"
-      }
+      # request_parameters = {
+      #   "overwrite:path" = "$request.path.proxy"
+      # }
     }
 
 
