@@ -16,6 +16,49 @@ resource "aws_apigatewayv2_api" "routing_{{routing_id}}" {
 
 }
 
+
+{% if main_vpc_id %}
+resource "aws_security_group" "{{routing_id}}_sg" {
+  name        = "${var.project_name}-${var.environment}-vpclink-sg"
+  description = "Allow TLS inbound traffic"
+  vpc_id      = "{{main_vpc_id}}"
+
+  ingress = [
+    {
+      description = "TLS from VPC"
+      from_port = 443
+      to_port = 443
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    },
+    {
+      description = "TLS from VPC"
+      from_port = 80
+      to_port = 80
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+  ]
+
+  egress = [
+    {
+      from_port = 0
+      to_port = 0
+      protocol = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+  ]
+
+  tags = {
+    Name = "VPC Link security group"
+  }
+}
+{% endif %}
+
+
 {% if routing_domain and routing_certificate %}
 resource "aws_apigatewayv2_domain_name" "domain_{{routing_id}}" {
   domain_name = "{{routing_domain}}"
@@ -53,21 +96,30 @@ resource "aws_apigatewayv2_stage" "routing" {
 
     }
   {% elif service.service_type == "container" and service.internal %}
-    # TODOO: this should be VPC link
+
+    resource "aws_apigatewayv2_vpc_link" "{{service.name}}" {
+      name               = "${var.project_name}-{{service.name}}-vpclink"
+      security_group_ids = [aws_security_group.{{routing_id}}_sg.id]
+      subnet_ids         = ["{{public_subnet_a_id}}", "{{public_subnet_b_id}}"]
+    }
+
     resource "aws_apigatewayv2_integration" "{{service.name}}" {
       api_id           = aws_apigatewayv2_api.routing_{{routing_id}}.id
       # credentials_arn  = aws_iam_role.example.arn
-      description      = "service {{service.name}} integration"
+      description      = "Gateway integration for {{service.name}}"
       integration_type = "HTTP_PROXY"
-      integration_uri  = "http://{{service.lb_url}}"
+      integration_uri  = "{{service.lb_arn}}"
 
       integration_method = "ANY"
-      connection_type    = "INTERNET"
+      connection_type    = "VPC_LINK"
+      connection_id      = aws_apigatewayv2_vpc_link.{{service.name}}.id
 
       request_parameters = {
         "overwrite:path" = "$request.path.proxy"
       }
     }
+
+
   {% elif service.service_type == "serverless" %}
     data "aws_lambda_function" "{{service.name}}" {
       function_name = "{{service.function_name}}"
