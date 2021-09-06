@@ -98,7 +98,7 @@ resource "aws_apigatewayv2_stage" "routing" {
       # credentials_arn  = aws_iam_role.example.arn
       description      = "Gateway integration for {{service.name}}"
       integration_type = "HTTP_PROXY"
-      integration_uri  = "{{service.lb_arn}}"
+      integration_uri  = "{{service.lb_http_listener_arn}}"
 
       integration_method = "ANY"
       connection_type    = "VPC_LINK"
