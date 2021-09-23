@@ -1,6 +1,6 @@
 {% if rest_api_gateway %}
   resource "aws_api_gateway_rest_api" "routing_{{routing_id}}" {
-    name          = "${var.project_name}-${var.environment}-gateway"
+    name    = "${var.project_name}-${var.environment}-gateway"
     endpoint_configuration {
       types = ["REGIONAL"]
     }
