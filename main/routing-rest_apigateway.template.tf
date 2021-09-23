@@ -67,7 +67,7 @@
   {% endfor %}
 
   output "lb_url" {
-    value = aws_api_gateway_rest_api.routing_{{routing_id}}.api_endpoint
+    value = aws_api_gateway_stage.routing_{{routing_id}}.invoke_url
   }
 
 {% endif %}
