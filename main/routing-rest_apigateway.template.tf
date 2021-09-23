@@ -66,7 +66,7 @@
         uri                     = "http://{{route.service.lb_url}}/{proxy}"
         connection_type         = "INTERNET"
         timeout_milliseconds    = 29000 # 50-29000
-        cache_key_parameters = ["method.request.path.proxy"]
+        # cache_key_parameters = ["method.request.path.proxy"]
         # request_parameters = {
         #   "integration.request.path.proxy" = "method.request.path.proxy"
         # }
