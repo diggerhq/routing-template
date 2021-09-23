@@ -32,7 +32,7 @@
 
     {% if route.service.service_type == "container" and not route.service.internal %}
 
-      resource "aws_api_gateway_integration" "{{service.name}}_parent" {
+      resource "aws_api_gateway_integration" "{{route.service.name}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_parent.id
         http_method = "ANY"
@@ -43,7 +43,7 @@
         timeout_milliseconds    = 29000 # 50-29000
       }
 
-      resource "aws_api_gateway_integration" "{{service.name}}_sub" {
+      resource "aws_api_gateway_integration" "{{route.service.name}}_sub" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
         http_method = "ANY"
