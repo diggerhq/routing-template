@@ -57,7 +57,7 @@
         timeout_milliseconds    = 29000 # 50-29000
       }
 
-      resource "aws_api_gateway_integration" "integration_{{route.id}}_sub" {
+      resource "aws_api_gateway_integration" "integration_{{route.id}}_child" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
         http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
@@ -67,9 +67,9 @@
         connection_type         = "INTERNET"
         timeout_milliseconds    = 29000 # 50-29000
         cache_key_parameters = ["method.request.path.proxy"]
-        request_parameters = {
-          "integration.request.path.proxy" = "method.request.path.proxy"
-        }
+        # request_parameters = {
+        #   "integration.request.path.proxy" = "method.request.path.proxy"
+        # }
       }
 
 
