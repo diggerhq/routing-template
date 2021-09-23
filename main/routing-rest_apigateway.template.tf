@@ -32,21 +32,21 @@
 
     {% if route.service.service_type == "container" and not route.service.internal %}
 
-      resource "aws_api_gateway_method" "{{route.id}}_parent" {
+      resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_parent.id
         http_method   = "ANY"
         authorization = "NONE"
       }
 
-      resource "aws_api_gateway_method" "{{route.id}}_child" {
+      resource "aws_api_gateway_method" "method_{{route.id}}_child" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
         http_method   = "ANY"
         authorization = "NONE"
       }
 
-      resource "aws_api_gateway_integration" "{{route.id}}_parent" {
+      resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_parent.id
         http_method = aws_api_gateway_method.{{route.id}}_parent.http_method
@@ -57,7 +57,7 @@
         timeout_milliseconds    = 29000 # 50-29000
       }
 
-      resource "aws_api_gateway_integration" "{{route.id}}_sub" {
+      resource "aws_api_gateway_integration" "integration_{{route.id}}_sub" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
         http_method = aws_api_gateway_method.{{route.id}}_sub.http_method
