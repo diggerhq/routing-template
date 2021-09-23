@@ -38,7 +38,7 @@
         http_method = "ANY"
         type                    = "HTTP_PROXY"
         integration_http_method = "ANY"
-        uri                     = "http://${route.service.lb_url}"
+        uri                     = "http://{{route.service.lb_url}}"
         connection_type         = "INTERNET"
         timeout_milliseconds    = 29000 # 50-29000
       }
@@ -49,7 +49,7 @@
         http_method = "ANY"
         type                    = "HTTP_PROXY"
         integration_http_method = "ANY"
-        uri                     = "http://${route.service.lb_url}/{proxy}"
+        uri                     = "http://{{route.service.lb_url}}/{proxy}"
         connection_type         = "INTERNET"
         timeout_milliseconds    = 29000 # 50-29000
         cache_key_parameters = ["method.request.path.proxy"]
