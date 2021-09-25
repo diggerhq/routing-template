@@ -1,0 +1,64 @@
+---
+swagger: "2.0"
+info:
+  version: "2021-09-24T10:28:50Z"
+  title: "multiregion"
+schemes:
+- "https"
+paths:
+{% for route in routing_routes %}
+  {% if route.service.service_type == "container" and not route.service.internal %}
+
+  {{route.route_prefix}}:
+    x-amazon-apigateway-any-method:
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "200 response"
+          schema:
+            $ref: "#/definitions/Empty"
+      x-amazon-apigateway-integration:
+        httpMethod: "ANY"
+        uri: "http://{{route.service.lb_url}}"
+        responses:
+          default:
+            statusCode: "200"
+        requestParameters:
+          integration.request.header.Host: "method.request.header.Host"
+        passthroughBehavior: "when_no_match"
+        type: "http_proxy"
+  {{route.route_prefix}}/{proxy+}:
+    x-amazon-apigateway-any-method:
+      produces:
+      - "application/json"
+      parameters:
+      - name: "Host"
+        in: "header"
+        required: true
+        type: "string"
+      - name: "proxy"
+        in: "path"
+        required: true
+        type: "string"
+      responses: {}
+      x-amazon-apigateway-integration:
+        httpMethod: "ANY"
+        uri: "http://{{route.service.lb_url}}/{proxy}"
+        responses:
+          default:
+            statusCode: "200"
+        requestParameters:
+          integration.request.header.Host: "method.request.header.Host"
+        passthroughBehavior: "when_no_match"
+        type: "http_proxy"
+
+  {% elif route.service.service_type == "container" and route.service.internal %}
+  {% elif route.service.service_type == "serverless" %}
+  {% endif %}
+{% endfor %}
+
+definitions:
+  Empty:
+    type: "object"
+    title: "Empty Schema"
