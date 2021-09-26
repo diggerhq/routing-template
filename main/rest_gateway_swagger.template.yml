@@ -55,6 +55,7 @@ paths:
             statusCode: "200"
         requestParameters:
           integration.request.header.Host: "method.request.header.Host"
+          integration.request.path.proxy: "method.request.path.proxy"
         passthroughBehavior: "when_no_match"
         type: "http_proxy"
 
