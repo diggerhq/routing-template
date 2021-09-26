@@ -2,7 +2,7 @@
 swagger: "2.0"
 info:
   version: "2021-09-24T10:28:50Z"
-  title: "multiregion"
+  title: "routing"
 schemes:
 - "https"
 paths:
@@ -13,6 +13,11 @@ paths:
     x-amazon-apigateway-any-method:
       produces:
       - "application/json"
+      parameters:
+      - name: "Host"
+        in: "header"
+        required: true
+        type: "string"
       responses:
         "200":
           description: "200 response"
