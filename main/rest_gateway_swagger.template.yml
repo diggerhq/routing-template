@@ -23,7 +23,7 @@ paths:
           description: "200 response"
           schema:
             $ref: "#/definitions/Empty"
-      x-amazon-apigateway-integration:
+      x-amazon-apigateway-integration:        
         httpMethod: "ANY"
         uri: "http://{{route.service.lb_url}}"
         responses:
