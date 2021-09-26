@@ -1,12 +1,12 @@
 {% if rest_api_gateway %}
 
   data "template_file" "swagger"{
-    template = "${file("./rest_gateway_swagger.yml")}"
+    template = file("./rest_gateway_swagger.yml")
   }
 
   resource "aws_api_gateway_rest_api" "routing_{{routing_id}}" {
     name    = "${var.project_name}-${var.environment}-gateway"
-    body    = "${data.template_file.swagger.rendered}"
+    body    = data.template_file.swagger.rendered
     endpoint_configuration {
       types = ["REGIONAL"]
     }
