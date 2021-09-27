@@ -42,6 +42,9 @@
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_parent.id
         http_method   = "ANY"
         authorization = "NONE"
+        request_parameters = {
+          "method.request.header.Host" = true
+        }
       }
 
       resource "aws_api_gateway_method" "method_{{route.id}}_child" {
@@ -49,6 +52,10 @@
         resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
         http_method   = "ANY"
         authorization = "NONE"
+        request_parameters = {
+          "method.request.header.Host" = true
+          "method.request.path.proxy"  = true
+        }
       }
 
       resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
@@ -76,7 +83,7 @@
         timeout_milliseconds    = 29000 # 50-29000
         # cache_key_parameters = ["method.request.path.proxy"]
         request_parameters = {
-          # "integration.request.path.proxy" = "method.request.path.proxy"
+          "integration.request.path.proxy" = "method.request.path.proxy"
           "integration.request.header.Host" = "method.request.header.Host"
         }
       }
