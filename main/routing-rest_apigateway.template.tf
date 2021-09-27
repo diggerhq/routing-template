@@ -77,7 +77,7 @@
         # cache_key_parameters = ["method.request.path.proxy"]
         request_parameters = {
           "integration.request.path.proxy" = "method.request.path.proxy"
-          "integration.request.header.Host" = "method.request.header.Host"
+          # "integration.request.header.Host" = "method.request.header.Host"
         }
       }
 
