@@ -12,6 +12,14 @@
   resource "aws_api_gateway_deployment" "routing_{{routing_id}}" {
     rest_api_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.id
     depends_on = ["aws_api_gateway_rest_api.routing_{{routing_id}}"]
+    
+    triggers = {
+      redeployment = sha1(jsonencode(aws_api_gateway_rest_api.routing_{{routing_id}}.body))
+    }
+
+    lifecycle {
+      create_before_destroy = true
+    }
   }
 
   resource "aws_api_gateway_stage" "routing_{{routing_id}}" {
