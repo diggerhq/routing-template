@@ -35,7 +35,7 @@
     resource "aws_api_gateway_resource" "resource_{{route.id}}_parent" {
       rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
       parent_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.root_resource_id
-      path_part   = "{{route.route_prefix}}"
+      path_part   = "{{route.route_prefix_no_trailing_slash}}"
     }
 
     resource "aws_api_gateway_resource" "resource_{{route.id}}_child" {
