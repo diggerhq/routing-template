@@ -14,7 +14,8 @@
     depends_on = [aws_api_gateway_rest_api.routing_{{routing_id}}]
 
     triggers = {
-      redeployment = sha1(jsonencode(aws_api_gateway_rest_api.routing_{{routing_id}}.body))
+      # force redeployment on each apply
+      redeployment = sha1(timestamp())
     }
 
     lifecycle {
