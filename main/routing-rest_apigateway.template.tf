@@ -19,10 +19,10 @@
         {% endif %}
         {% if route.service.service_type == "container" %}
           aws_api_gateway_method.method_{{route.id}}_parent,
-          aws_api_gateway_integration.integration_{{route.id}}_parent,
+
           {% if route.route_prefix != "/" %}
             aws_api_gateway_method.method_{{route.id}}_child,
-            aws_api_gateway_integration.integration_{{route.id}}_child,
+
           {% endif %}
         {% endif %}
       {% endfor %}
