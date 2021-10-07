@@ -13,7 +13,7 @@
     rest_api_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.id
     depends_on = [
       {% for route in routing_routes %}
-        aws_api_gateway_resource.resource_{{route.id}}_parent,
+        local.gateway_resource_parent_{{route.id}},
       {% endfor %}
       aws_api_gateway_rest_api.routing_{{routing_id}}
     ]
