@@ -11,7 +11,15 @@
 
   resource "aws_api_gateway_deployment" "routing_{{routing_id}}" {
     rest_api_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-    depends_on = [aws_api_gateway_rest_api.routing_{{routing_id}}]
+    depends_on = [
+      {% for route in routing_routes %}
+      aws_api_gateway_resource.resource_{{route.id}}_parent,
+      aws_api_gateway_resource.resource_{{route.id}}_child,
+      aws_api_gateway_method.method_{{route.id}}_parent,
+      aws_api_gateway_method.method_{{route.id}}_child,
+      {% endfor %}
+      aws_api_gateway_rest_api.routing_{{routing_id}}
+    ]
 
     triggers = {
       # force redeployment on each apply
