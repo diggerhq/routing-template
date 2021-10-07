@@ -68,16 +68,15 @@
 
     {% if route.service.service_type == "container" and not route.service.internal %}
 
-        resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
-          rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-          resource_id = local.gateway_resource_parent.id
-          http_method   = "ANY"
-          authorization = "NONE"
-          request_parameters = {
-            "method.request.header.Host" = true
-          }
+      resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_parent.id
+        http_method   = "ANY"
+        authorization = "NONE"
+        request_parameters = {
+          "method.request.header.Host" = true
         }
-      {% endif %}
+      }
 
       resource "aws_api_gateway_method" "method_{{route.id}}_child" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
