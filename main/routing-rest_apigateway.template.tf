@@ -18,8 +18,8 @@
         {% if route.service.service_type == "container" %}
           aws_api_gateway_method.method_{{route.id}}_parent,
           aws_api_gateway_method.method_{{route.id}}_child,
-          aws_api_gateway_integration" "integration_{{route.id}}_parent
-          aws_api_gateway_integration" "integration_{{route.id}}_child
+          aws_api_gateway_integration" "integration_{{route.id}}_parent,
+          aws_api_gateway_integration" "integration_{{route.id}}_child,
         {% endif %}
       {% endfor %}
       aws_api_gateway_rest_api.routing_{{routing_id}}
