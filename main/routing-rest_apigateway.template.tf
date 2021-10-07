@@ -80,16 +80,18 @@
         }
       }
 
-      resource "aws_api_gateway_method" "method_{{route.id}}_child" {
-        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-        resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
-        http_method   = "ANY"
-        authorization = "NONE"
-        request_parameters = {
-          "method.request.header.Host" = true
-          "method.request.path.proxy"  = true
+      {% if route.route_prefix != "/" %}
+        resource "aws_api_gateway_method" "method_{{route.id}}_child" {
+          rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+          resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
+          http_method   = "ANY"
+          authorization = "NONE"
+          request_parameters = {
+            "method.request.header.Host" = true
+            "method.request.path.proxy"  = true
+          }
         }
-      }
+      {% endif %}
 
       resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
