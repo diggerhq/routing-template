@@ -14,17 +14,6 @@
     depends_on = [
       {% for route in routing_routes %}
         aws_api_gateway_resource.resource_{{route.id}}_parent,
-        {% if route.route_prefix != "/" %}
-          aws_api_gateway_resource.resource_{{route.id}}_child,
-        {% endif %}
-        {% if route.service.service_type == "container" %}
-          aws_api_gateway_method.method_{{route.id}}_parent,
-          aws_api_gateway_integration.integration_{{route.id}}_parent,
-          {% if route.route_prefix != "/" %}
-            aws_api_gateway_method.method_{{route.id}}_child,
-            aws_api_gateway_integration.integration_{{route.id}}_child,
-          {% endif %}
-        {% endif %}
       {% endfor %}
       aws_api_gateway_rest_api.routing_{{routing_id}}
     ]
@@ -47,7 +36,7 @@
   {% for route in routing_routes %}
 
     {% if route.route_prefix == "/" %}
-      resource "aws_api_gateway_resource" "resource_{{route.id}}_parent" {
+      resource "aws_api_gateway_resource" "resource_{{route.id}}_child" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
         parent_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.root_resource_id
         path_part   = "{proxy+}"
@@ -69,28 +58,39 @@
 
     {% if route.service.service_type == "container" and not route.service.internal %}
 
-      resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
-        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-        resource_id = aws_api_gateway_resource.resource_{{route.id}}_parent.id
-        http_method   = "ANY"
-        authorization = "NONE"
-        request_parameters = {
-          "method.request.header.Host" = true
-        }
-      }
-
-      {% if route.route_prefix != "/" %}
-        resource "aws_api_gateway_method" "method_{{route.id}}_child" {
+      {% if route.route_prefix == "/" %}
+        resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
           rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-          resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
+          resource_id = aws_api_gateway_rest_api.routing_{{routing_id}}.root_resource_id
           http_method   = "ANY"
           authorization = "NONE"
           request_parameters = {
             "method.request.header.Host" = true
-            "method.request.path.proxy"  = true
+          }
+        }   
+      {% else %}
+        resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
+          rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+          resource_id = aws_api_gateway_resource.resource_{{route.id}}_parent.id
+          http_method   = "ANY"
+          authorization = "NONE"
+          request_parameters = {
+            "method.request.header.Host" = true
           }
         }
       {% endif %}
+
+      resource "aws_api_gateway_method" "method_{{route.id}}_child" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
+        http_method   = "ANY"
+        authorization = "NONE"
+        request_parameters = {
+          "method.request.header.Host" = true
+          "method.request.path.proxy"  = true
+        }
+      }
+    
 
       resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
@@ -106,23 +106,21 @@
         }
       }
 
-      {% if route.route_prefix != "/" %}      
-        resource "aws_api_gateway_integration" "integration_{{route.id}}_child" {
-          rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-          resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
-          http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
-          type                    = "HTTP_PROXY"
-          integration_http_method = "ANY"
-          uri                     = "http://{{route.service.lb_url}}/{proxy}"
-          connection_type         = "INTERNET"
-          timeout_milliseconds    = 29000 # 50-29000
-          # cache_key_parameters = ["method.request.path.proxy"]
-          request_parameters = {
-            "integration.request.path.proxy" = "method.request.path.proxy"
-            "integration.request.header.Host" = "method.request.header.Host"
-          }
+      resource "aws_api_gateway_integration" "integration_{{route.id}}_child" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
+        http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
+        type                    = "HTTP_PROXY"
+        integration_http_method = "ANY"
+        uri                     = "http://{{route.service.lb_url}}/{proxy}"
+        connection_type         = "INTERNET"
+        timeout_milliseconds    = 29000 # 50-29000
+        # cache_key_parameters = ["method.request.path.proxy"]
+        request_parameters = {
+          "integration.request.path.proxy" = "method.request.path.proxy"
+          "integration.request.header.Host" = "method.request.header.Host"
         }
-      {% endif %}
+      }
 
 
     {% elif route.service.service_type == "container" and route.service.internal %}
