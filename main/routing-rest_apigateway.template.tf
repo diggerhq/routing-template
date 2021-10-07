@@ -13,7 +13,7 @@
     rest_api_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.id
     depends_on = [
       {% for route in routing_routes %}
-        local.gateway_resource_parent_{{route.id}},
+        local.gateway_resource_parent_{{route.id}}_id,
       {% endfor %}
       aws_api_gateway_rest_api.routing_{{routing_id}}
     ]
@@ -43,8 +43,9 @@
       }
 
       locals {
-        gateway_resource_parent_{{route.id}} = aws_api_gateway_rest_api.routing_{{routing_id}}.root_resource_id
-        gateway_resource_child_{{route.id}} = aws_api_gateway_resource.resource_{{route.id}}_child
+        gateway_resource_parent_{{route.id}}_id = aws_api_gateway_rest_api.routing_{{routing_id}}.root_resource_id
+        gateway_resource_child_{{route.id}}_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
+
       }
     {% else %}
       resource "aws_api_gateway_resource" "resource_{{route.id}}_parent" {
@@ -60,8 +61,8 @@
       }
 
       locals {
-        gateway_resource_parent_{{route.id}} = aws_api_gateway_resource.resource_{{route.id}}_parent
-        gateway_resource_child_{{route.id}} = aws_api_gateway_resource.resource_{{route.id}}_child
+        gateway_resource_parent_{{route.id}}_id = aws_api_gateway_resource.resource_{{route.id}}_parent.id
+        gateway_resource_child_{{route.id}}_id = aws_api_gateway_resource.resource_{{route.id}}_child.id
       }
     {% endif %}
 
@@ -70,7 +71,7 @@
 
       resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-        resource_id = local.gateway_resource_parent_{{route.id}}.id
+        resource_id = local.gateway_resource_parent_{{route.id}}_id
         http_method   = "ANY"
         authorization = "NONE"
         request_parameters = {
@@ -80,7 +81,7 @@
 
       resource "aws_api_gateway_method" "method_{{route.id}}_child" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-        resource_id = local.gateway_resource_child_{{route.id}}.id
+        resource_id = local.gateway_resource_child_{{route.id}}_id
         http_method   = "ANY"
         authorization = "NONE"
         request_parameters = {
@@ -92,7 +93,7 @@
 
       resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-        resource_id = local.gateway_resource_parent_{{route.id}}.id
+        resource_id = local.gateway_resource_parent_{{route.id}}_id
         http_method = aws_api_gateway_method.method_{{route.id}}_parent.http_method
         type                    = "HTTP_PROXY"
         integration_http_method = "ANY"
@@ -106,7 +107,7 @@
 
       resource "aws_api_gateway_integration" "integration_{{route.id}}_child" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-        resource_id = local.gateway_resource_child_{{route.id}}.id
+        resource_id = local.gateway_resource_child_{{route.id}}_id
         http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
         type                    = "HTTP_PROXY"
         integration_http_method = "ANY"
