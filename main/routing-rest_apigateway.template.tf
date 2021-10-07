@@ -44,17 +44,26 @@
 
 
   {% for route in routing_routes %}
-    resource "aws_api_gateway_resource" "resource_{{route.id}}_parent" {
-      rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-      parent_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.root_resource_id
-      path_part   = "{{route.route_prefix_no_trailing_slash}}"
-    }
 
-    resource "aws_api_gateway_resource" "resource_{{route.id}}_child" {
-      rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
-      parent_id   = aws_api_gateway_resource.resource_{{route.id}}_parent.id
-      path_part   = "{proxy+}"
-    }
+    {% if route.route_prefix == "/" %}
+      resource "aws_api_gateway_resource" "resource_{{route.id}}_parent" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        parent_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.root_resource_id
+        path_part   = "{proxy+}"
+      }
+    {% else %}
+      resource "aws_api_gateway_resource" "resource_{{route.id}}_parent" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        parent_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.root_resource_id
+        path_part   = "{{route.route_prefix_no_trailing_slash}}"
+      }
+
+      resource "aws_api_gateway_resource" "resource_{{route.id}}_child" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        parent_id   = aws_api_gateway_resource.resource_{{route.id}}_parent.id
+        path_part   = "{proxy+}"
+      }
+    {% endif %}
 
 
     {% if route.service.service_type == "container" and not route.service.internal %}
