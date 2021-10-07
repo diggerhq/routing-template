@@ -14,7 +14,9 @@
     depends_on = [
       {% for route in routing_routes %}
         aws_api_gateway_resource.resource_{{route.id}}_parent,
-        aws_api_gateway_resource.resource_{{route.id}}_child,
+        {% if route.route_prefix != "/" %}
+          aws_api_gateway_resource.resource_{{route.id}}_child,
+        {% endif %}
         {% if route.service.service_type == "container" %}
           aws_api_gateway_method.method_{{route.id}}_parent,
           aws_api_gateway_integration.integration_{{route.id}}_parent,
