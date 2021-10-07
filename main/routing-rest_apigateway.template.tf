@@ -23,6 +23,9 @@
       redeployment = sha1(timestamp())
     }
 
+    lifecycle {
+      create_before_destroy = true
+    }
   }
 
   resource "aws_api_gateway_stage" "routing_{{routing_id}}" {
