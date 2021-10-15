@@ -195,7 +195,7 @@
         http_method = aws_api_gateway_method.method_{{route.id}}_parent.http_method
         type                    = "HTTP_PROXY"
         integration_http_method = "ANY"
-        uri                     = join("", ["http://", aws_lb.{{service.name}}.dns_name}])
+        uri                     = join("", ["http://", aws_lb.{{route.service.name}}.dns_name])
         connection_type         = "VPC_LINK"
         timeout_milliseconds    = 29000 # 50-29000
 
@@ -212,7 +212,7 @@
         http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
         type                    = "HTTP_PROXY"
         integration_http_method = "ANY"
-        uri                     = join("", ["http://", aws_lb.{{service.name}}.dns_name}, "{proxy}"])
+        uri                     = join("", ["http://", aws_lb.{{route.service.name}}.dns_name, "{proxy}"])
         connection_type         = "VPC_LINK"
         timeout_milliseconds    = 29000 # 50-29000
         # cache_key_parameters = ["method.request.path.proxy"]
