@@ -52,7 +52,7 @@
           name         = "${var.project_name}-${var.environment}-{{service.name}}-tg"
           port         = 80
           protocol     = "TCP"
-          vpc_id       = aws_vpc.main.id
+          vpc_id       = "{{main_vpc_id}}"
           target_type  = "alb"
       }
 
