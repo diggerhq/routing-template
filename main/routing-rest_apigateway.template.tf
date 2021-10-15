@@ -70,7 +70,7 @@
       # create vpc link
       resource "aws_api_gateway_vpc_link" "{{service.name}}" {
         name        = "${var.project_name}-${var.environment}-{{service.name}}-vpclink"
-        target_arns = [aws_lb.test.arn]
+        target_arns = [aws_lb.{{service.name}}.arn]
       }
 
     {% endif %}
