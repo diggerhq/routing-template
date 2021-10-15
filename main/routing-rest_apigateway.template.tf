@@ -70,7 +70,7 @@
       resource "aws_lb_listener" "{{service.name}}" {
         load_balancer_arn = aws_lb.{{service.name}}.arn
         port              = "80"
-        protocol          = "HTTP"
+        protocol          = "TCP"
 
         default_action {
           type             = "forward"
