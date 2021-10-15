@@ -35,6 +35,46 @@
   }
 
 
+  {% for service in routing_services %}
+    {% if service.service_type == "container" and service.internal %}
+
+      # Create NLB
+      resource "aws_lb" "{{service.name}}" {
+          name               = "${var.project_name}-${var.environment}-{{service.name}}-nlb"
+          internal           = true
+          load_balancer_type = "network"
+          subnets            = ["{{public_subnet_a_id}}", "{{public_subnet_b_id}}"]
+      }
+
+      # Create NLB target group that forwards traffic to alb
+      # https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_CreateTargetGroup.html
+      resource "aws_lb_target_group" "{{service.name}}" {
+          name         = "${var.project_name}-${var.environment}-{{service.name}}-tg"
+          port         = 80
+          protocol     = "TCP"
+          vpc_id       = aws_vpc.main.id
+          target_type  = "alb"
+      }
+
+      # Create target group attachment
+      # More details: https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_TargetDescription.html
+      # https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_RegisterTargets.html
+      resource "aws_lb_target_group_attachment" "{{service.name}}" {
+          target_group_arn = aws_lb_target_group.{{service.name}}.arn
+          # target to attach to this target group
+          target_id        = "{{service.lb_arn}}"
+          #  If the target type is alb, the targeted Application Load Balancer must have at least one listener whose port matches the target group port.
+          port             = 80
+      }
+
+      # create vpc link
+      resource "aws_api_gateway_vpc_link" "{{service.name}}" {
+        name        = "${var.project_name}-${var.environment}-{{service.name}}-vpclink"
+        target_arns = [aws_lb.test.arn]
+      }
+
+    {% endif %}
+  {% endfor %}
 
   {% for route in routing_routes %}
 
@@ -126,6 +166,64 @@
 
 
     {% elif route.service.service_type == "container" and route.service.internal %}
+
+      resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_parent_{{route.id}}_id
+        http_method   = "ANY"
+        authorization = "NONE"
+        request_parameters = {
+          "method.request.header.Host" = true
+        }
+      }
+
+      resource "aws_api_gateway_method" "method_{{route.id}}_child" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_child_{{route.id}}_id
+        http_method   = "ANY"
+        authorization = "NONE"
+        request_parameters = {
+          "method.request.header.Host" = true
+          "method.request.path.proxy"  = true
+        }
+      }
+    
+
+      resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_parent_{{route.id}}_id
+        http_method = aws_api_gateway_method.method_{{route.id}}_parent.http_method
+        type                    = "HTTP_PROXY"
+        integration_http_method = "ANY"
+        uri                     = "http://{{route.service.lb_url}}"
+        connection_type         = "VPC_LINK"
+        timeout_milliseconds    = 29000 # 50-29000
+
+        connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+
+        request_parameters = {
+          "integration.request.header.Host" = "method.request.header.Host"
+        }
+      }
+
+      resource "aws_api_gateway_integration" "integration_{{route.id}}_child" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_child_{{route.id}}_id
+        http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
+        type                    = "HTTP_PROXY"
+        integration_http_method = "ANY"
+        uri                     = "http://{{route.service.lb_url}}/{proxy}"
+        connection_type         = "VPC_LINK"
+        timeout_milliseconds    = 29000 # 50-29000
+        # cache_key_parameters = ["method.request.path.proxy"]
+
+        connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+
+        request_parameters = {
+          "integration.request.path.proxy" = "method.request.path.proxy"
+          "integration.request.header.Host" = "method.request.header.Host"
+        }
+      }
 
     {% elif route.service.service_type == "serverless" %}
     {% endif %}
