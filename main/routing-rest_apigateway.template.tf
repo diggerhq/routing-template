@@ -49,7 +49,7 @@
       # Create NLB target group that forwards traffic to alb
       # https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_CreateTargetGroup.html
       resource "aws_lb_target_group" "{{service.name}}" {
-          name         = "${var.project_name}-${var.environment}-{{service.name}}"
+          name         = "${var.project_name}${var.environment}{{service.name}}NL"
           port         = 80
           protocol     = "TCP"
           vpc_id       = "{{main_vpc_id}}"
