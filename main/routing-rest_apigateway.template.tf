@@ -83,6 +83,22 @@
         name        = "${var.project_name}-${var.environment}-{{service.name}}"
         target_arns = [aws_lb.{{service.name}}.arn]
       }
+    {% elif service.service_type == "serverless" %}
+
+      data "aws_lambda_function" "{{service.name}}" {
+        function_name = "{{service.function_name}}"
+      }
+
+      # allow GW permissions to this lambda function
+      resource "aws_lambda_permission" "{{service.name}}" {
+        statement_id  = "AllowExecutionFromAPIGateway"
+        action        = "lambda:InvokeFunction"
+        function_name = "{{service.function_name}}"
+        principal     = "apigateway.amazonaws.com"
+
+        # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+        source_arn = "${aws_api_gateway_rest_api.routing_{{routing_id}}.execution_arn}/*/*/*"
+      }
 
     {% endif %}
   {% endfor %}
@@ -237,6 +253,55 @@
       }
 
     {% elif route.service.service_type == "serverless" %}
+
+      resource "aws_api_gateway_method" "method_{{route.id}}_parent" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_parent_{{route.id}}_id
+        http_method   = "ANY"
+        authorization = "NONE"
+        request_parameters = {
+          "method.request.header.Host" = true
+        }
+      }
+
+      resource "aws_api_gateway_method" "method_{{route.id}}_child" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_child_{{route.id}}_id
+        http_method   = "ANY"
+        authorization = "NONE"
+        request_parameters = {
+          "method.request.header.Host" = true
+          "method.request.path.proxy"  = true
+        }
+      }
+
+      resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_parent_{{route.id}}_id
+        http_method = aws_api_gateway_method.method_{{route.id}}_parent.http_method
+        type                    = "AWS_PROXY"
+        integration_http_method = "ANY"
+        uri                     = data.aws_lambda_function.{{route.service.name}}.invoke_arn
+
+        request_parameters = {
+          "integration.request.header.Host" = "method.request.header.Host"
+        }
+      }
+
+      resource "aws_api_gateway_integration" "integration_{{route.id}}_child" {
+        rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
+        resource_id = local.gateway_resource_child_{{route.id}}_id
+        http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
+        type                    = "AWS_PROXY"
+        integration_http_method = "ANY"
+        uri                     = "${data.aws_lambda_function.{{route.service.name}}.invoke_arn}/{proxy}"
+
+        request_parameters = {
+          "integration.request.path.proxy" = "method.request.path.proxy"
+          "integration.request.header.Host" = "method.request.header.Host"
+        }
+      }
+
     {% endif %}
 
   {% endfor %}
