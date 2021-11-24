@@ -294,7 +294,7 @@
         http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
         type                    = "AWS_PROXY"
         integration_http_method = "ANY"
-        uri                     = "${data.aws_lambda_function.{{route.service.name}}.invoke_arn}/{proxy}"
+        uri                     = data.aws_lambda_function.{{route.service.name}}.invoke_arn
 
         request_parameters = {
           "integration.request.path.proxy" = "method.request.path.proxy"
