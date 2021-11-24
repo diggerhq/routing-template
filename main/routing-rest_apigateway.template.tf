@@ -280,7 +280,7 @@
         resource_id = local.gateway_resource_parent_{{route.id}}_id
         http_method = aws_api_gateway_method.method_{{route.id}}_parent.http_method
         type                    = "AWS_PROXY"
-        integration_http_method = "ANY"
+        integration_http_method = "POST"
         uri                     = data.aws_lambda_function.{{route.service.name}}.invoke_arn
 
         request_parameters = {
@@ -293,7 +293,7 @@
         resource_id = local.gateway_resource_child_{{route.id}}_id
         http_method = aws_api_gateway_method.method_{{route.id}}_child.http_method
         type                    = "AWS_PROXY"
-        integration_http_method = "ANY"
+        integration_http_method = "POST"
         uri                     = data.aws_lambda_function.{{route.service.name}}.invoke_arn
 
         request_parameters = {
