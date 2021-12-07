@@ -167,7 +167,7 @@
         http_method = aws_api_gateway_method.method_{{route.id}}_parent.http_method
         type                    = "HTTP_PROXY"
         integration_http_method = "ANY"
-        uri                     = "http://{{route.service.lb_url}}"
+        uri                     = "http://{{route.service.lb_url}}/{{route.forward_prefix}}"
         connection_type         = "INTERNET"
         timeout_milliseconds    = 29000 # 50-29000
         request_parameters = {
