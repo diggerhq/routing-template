@@ -236,7 +236,7 @@
         timeout_milliseconds    = 29000 # 50-29000
 
         #connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
-        connection_id = "$${stageVariables.vpc_link_id{{route.service.name}}}" //weird, but correct syntax!
+        connection_id = "$${stageVariables.vpc_link_id_{{route.service.name}}}" //weird, but correct syntax!
 
         request_parameters = {
           "integration.request.header.Host" = "method.request.header.Host"
@@ -255,7 +255,7 @@
         # cache_key_parameters = ["method.request.path.proxy"]
 
         #connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
-        connection_id = "$${stageVariables.vpc_link_id{{route.service.name}}}" //weird, but correct syntax!
+        connection_id = "$${stageVariables.vpc_link_id_{{route.service.name}}}" //weird, but correct syntax!
 
         request_parameters = {
           "integration.request.path.proxy" = "method.request.path.proxy"
