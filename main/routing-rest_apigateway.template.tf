@@ -8,7 +8,6 @@
     }
   }
 
-
   resource "aws_api_gateway_deployment" "routing_{{routing_id}}" {
     rest_api_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.id
     depends_on = [
@@ -19,6 +18,15 @@
       
       aws_api_gateway_rest_api.routing_{{routing_id}}
     ]
+
+
+    variables = {
+{% for service in routing_services %}
+{% if service.service_type == "container" and service.internal %}
+      "vpc_link_id_{{service.name}}" = aws_api_gateway_vpc_link.{{service.name}}.id
+{%endif%}
+{%endfor%}
+    }
 
     triggers = {
       # force redeployment on each apply
@@ -216,7 +224,6 @@
           "method.request.path.proxy"  = true
         }
       }
-    
 
       resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
@@ -228,7 +235,8 @@
         connection_type         = "VPC_LINK"
         timeout_milliseconds    = 29000 # 50-29000
 
-        connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+        #connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+        connection_id = "$${stageVariables.vpc_link_id{{route.service.name}}}" //weird, but correct syntax!
 
         request_parameters = {
           "integration.request.header.Host" = "method.request.header.Host"
@@ -246,7 +254,8 @@
         timeout_milliseconds    = 29000 # 50-29000
         # cache_key_parameters = ["method.request.path.proxy"]
 
-        connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+        #connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+        connection_id = "$${stageVariables.vpc_link_id{{route.service.name}}}" //weird, but correct syntax!
 
         request_parameters = {
           "integration.request.path.proxy" = "method.request.path.proxy"
