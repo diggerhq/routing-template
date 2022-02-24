@@ -12,9 +12,11 @@
   resource "aws_api_gateway_deployment" "routing_{{routing_id}}" {
     rest_api_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.id
     depends_on = [
-      {% for route in routing_routes %}
-        local.gateway_resource_parent_{{route.id}}_id,
+     {% for route in routing_routes %}
+        aws_api_gateway_integration.integration_{{route.id}}_parent,
+        aws_api_gateway_integration.integration_{{route.id}}_child,
       {% endfor %}
+      
       aws_api_gateway_rest_api.routing_{{routing_id}}
     ]
 
