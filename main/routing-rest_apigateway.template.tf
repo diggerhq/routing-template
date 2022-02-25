@@ -1,6 +1,5 @@
 {% if rest_api_gateway %}
 
-
   resource "aws_api_gateway_rest_api" "routing_{{routing_id}}" {
     name    = "${var.project_name}-${var.environment}-gateway"
     endpoint_configuration {
@@ -41,6 +40,7 @@
 {%endif%}
 {%endfor%}
     }
+    tags = var.tags
   }
 
   {% for service in routing_services %}
@@ -52,6 +52,7 @@
           internal           = true
           load_balancer_type = "network"
           subnets            = ["{{public_subnet_a_id}}", "{{public_subnet_b_id}}"]
+          tags              = var.tags
       }
 
       # Create NLB target group that forwards traffic to alb
@@ -62,6 +63,7 @@
           protocol     = "TCP"
           vpc_id       = "{{main_vpc_id}}"
           target_type  = "alb"
+          tags         = var.tags
       }
 
       # Create target group attachment
@@ -84,6 +86,7 @@
           type             = "forward"
           target_group_arn = aws_lb_target_group.{{service.name}}.arn
         }
+        tags = var.tags
       }      
 
       # create vpc link
