@@ -36,9 +36,9 @@
 
     variables = {
 {% for service in routing_services %}
-
+{% if service.service_type == "container" and service.internal %}
       "vpc_link_id_{{service.name}}" = aws_api_gateway_vpc_link.{{service.name}}.id
-
+{%endif%}
 {%endfor%}
     }
   }
