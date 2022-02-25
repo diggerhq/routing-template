@@ -22,9 +22,7 @@
 
     variables = {
         "test" = "test"
-{% for route in routing_routes %}
-      "vpc_link_id_{{route.service.name}}" = aws_api_gateway_vpc_link.{{route.service.name}}.id
-{%endfor%}
+
     }
 
     triggers = {
