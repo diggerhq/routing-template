@@ -8,7 +8,7 @@ terraform {
   backend "s3" {}
 
   required_providers {
-    mycloud = {
+    aws = {
       source  = "aws"
       version = "~> 3.0"
     }
