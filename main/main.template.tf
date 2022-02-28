@@ -7,6 +7,12 @@ terraform {
   # see: https://github.com/hashicorp/terraform/issues/22088
   backend "s3" {}
 
+  required_providers {
+    mycloud = {
+      source  = "aws"
+      version = "~> 3.0"
+    }
+  }
 }
 
 # The AWS Profile to use
