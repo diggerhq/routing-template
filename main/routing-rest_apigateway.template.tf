@@ -1,13 +1,11 @@
 {% if rest_api_gateway %}
 
-
   resource "aws_api_gateway_rest_api" "routing_{{routing_id}}" {
     name    = "${var.project_name}-${var.environment}-gateway"
     endpoint_configuration {
       types = ["REGIONAL"]
     }
   }
-
 
   resource "aws_api_gateway_deployment" "routing_{{routing_id}}" {
     rest_api_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.id
@@ -34,8 +32,16 @@
     rest_api_id   = aws_api_gateway_rest_api.routing_{{routing_id}}.id
     deployment_id = aws_api_gateway_deployment.routing_{{routing_id}}.id
     stage_name        = "default"
-  }
 
+    variables = {
+{% for service in routing_services %}
+{% if service.service_type == "container" and service.internal %}
+      "vpc_link_id_{{service.name}}" = aws_api_gateway_vpc_link.{{service.name}}.id
+{%endif%}
+{%endfor%}
+    }
+    tags = var.tags
+  }
 
   {% for service in routing_services %}
     {% if service.service_type == "container" and service.internal %}
@@ -46,6 +52,7 @@
           internal           = true
           load_balancer_type = "network"
           subnets            = ["{{public_subnet_a_id}}", "{{public_subnet_b_id}}"]
+          tags              = var.tags
       }
 
       # Create NLB target group that forwards traffic to alb
@@ -56,6 +63,7 @@
           protocol     = "TCP"
           vpc_id       = "{{main_vpc_id}}"
           target_type  = "alb"
+          tags         = var.tags
       }
 
       # Create target group attachment
@@ -78,6 +86,7 @@
           type             = "forward"
           target_group_arn = aws_lb_target_group.{{service.name}}.arn
         }
+        tags = var.tags
       }      
 
       # create vpc link
@@ -216,7 +225,6 @@
           "method.request.path.proxy"  = true
         }
       }
-    
 
       resource "aws_api_gateway_integration" "integration_{{route.id}}_parent" {
         rest_api_id = aws_api_gateway_rest_api.routing_{{routing_id}}.id
@@ -228,7 +236,8 @@
         connection_type         = "VPC_LINK"
         timeout_milliseconds    = 29000 # 50-29000
 
-        connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+        #connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+        connection_id = "$${stageVariables.vpc_link_id_{{route.service.name}}}" //weird, but correct syntax!
 
         request_parameters = {
           "integration.request.header.Host" = "method.request.header.Host"
@@ -246,7 +255,8 @@
         timeout_milliseconds    = 29000 # 50-29000
         # cache_key_parameters = ["method.request.path.proxy"]
 
-        connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+        #connection_id   = aws_api_gateway_vpc_link.{{route.service.name}}.id
+        connection_id = "$${stageVariables.vpc_link_id_{{route.service.name}}}" //weird, but correct syntax!
 
         request_parameters = {
           "integration.request.path.proxy" = "method.request.path.proxy"

@@ -16,3 +16,7 @@ variable "aws_secret" {}
 variable "project_name" {}
 
 variable "environment" {}
+
+variable "tags" {
+  default = { deployed_by = "digger" }
+}

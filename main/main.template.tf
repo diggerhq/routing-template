@@ -7,6 +7,12 @@ terraform {
   # see: https://github.com/hashicorp/terraform/issues/22088
   backend "s3" {}
 
+  required_providers {
+    aws = {
+      source  = "aws"
+      version = "~> 3.0"
+    }
+  }
 }
 
 # The AWS Profile to use
@@ -14,7 +20,6 @@ terraform {
 # }
 
 provider "aws" {
-  version = ">= 3.63.0"
   region  = var.region
   # profile = var.aws_profile
   access_key = var.aws_key
